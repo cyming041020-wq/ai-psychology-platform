@@ -13,7 +13,7 @@
 
     <groupId>com.psychology</groupId>
     <artifactId>psychology-backend</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
     <name>psychology-backend</name>
     <description>AI-driven psychological counselling and crisis intervention backend</description>
 
