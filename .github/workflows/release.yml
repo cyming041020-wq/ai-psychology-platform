@@ -1,0 +1,102 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: verify, package, and publish release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate release tag
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          tag_object="$(git rev-parse "$GITHUB_REF")"
+          tag_commit="$(git rev-list -n 1 "$GITHUB_REF")"
+          [ "$(git cat-file -t "$tag_object")" = "tag" ]
+          git merge-base --is-ancestor "$tag_commit" origin/main
+          scripts/validate_tag_signature.sh "$tag_object"
+
+      - name: Validate repository policy
+        run: scripts/validate_repo.sh
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Test and package backend
+        run: mvn -f backend/pom.xml clean package
+
+      - name: Build frontend
+        run: npm --prefix frontend ci && npm --prefix frontend run build
+
+      - name: Assemble release assets and notes
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          backend_jar="$(find backend/target -maxdepth 1 -type f -name '*.jar' ! -name '*.original' -print -quit)"
+          [ -n "$backend_jar" ]
+          cp "$backend_jar" "release-assets/psychology-backend-${RELEASE_TAG}.jar"
+          tar -czf "release-assets/psychology-frontend-${RELEASE_TAG}.tar.gz" -C frontend dist
+          (
+            cd release-assets
+            sha256sum * > SHA256SUMS
+          )
+
+          tag_commit="$(git rev-list -n 1 "$GITHUB_REF")"
+          previous_tag="$(git describe --tags --match 'v[0-9]*.[0-9]*.[0-9]*' --abbrev=0 "$tag_commit^" 2>/dev/null || true)"
+          {
+            printf '# %s\n\n' "$RELEASE_TAG"
+            printf '## Changes\n\n'
+            if [ -n "$previous_tag" ]; then
+              git log --pretty=format:'- %h %s' "$previous_tag..$tag_commit"
+            else
+              git log --pretty=format:'- %h %s' "$tag_commit" -n 50
+            fi
+            printf '\n\n## Compatibility\n\n'
+            printf 'Backend and frontend artifacts are attached. Review database migrations in `docs/sql/` before upgrading.\n\n'
+            printf '## Breaking Changes\n\n'
+            printf 'Review the changes listed above and the migration notes before deployment.\n\n'
+            printf '## Rollback\n\n'
+            printf 'Redeploy the artifacts from the previous formal release tag.\n'
+          } > release-notes.md
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release create "$RELEASE_TAG" release-assets/* \
+            --verify-tag \
+            --title "AI Psychology Platform $RELEASE_TAG" \
+            --notes-file release-notes.md
