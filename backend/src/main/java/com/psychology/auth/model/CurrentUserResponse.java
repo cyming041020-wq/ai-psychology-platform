@@ -1,0 +1,8 @@
+package com.psychology.auth.model;
+
+import java.util.List;
+
+public record CurrentUserResponse(
+        String username,
+        List<String> roles) {
+}

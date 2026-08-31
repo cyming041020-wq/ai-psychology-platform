@@ -13,9 +13,17 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    baseline-on-migrate: true
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   global-config:
     db-config:
       id-type: auto
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-this-development-secret-to-a-32-byte-value}
+    expiration: ${JWT_EXPIRATION:PT24H}
