@@ -15,11 +15,11 @@ release objects. The normative release rules are maintained under
 Before creating a release:
 
 - `main` contains the intended fast-forward-integrated changes.
-- `scripts/validate_repo.sh` passes.
-- Backend tests and frontend production build have passed, or their evidence
-  is recorded as not applicable.
-- Release notes describe compatibility impact and rollback guidance.
+- The pull request's `ugs-validate` and `application-checks` checks pass.
 - The signing key is trusted and not revoked.
+- The release tag uses the exact `v<major>.<minor>.<patch>` form.
+- The remote workflow will generate release notes with compatibility impact
+  and rollback guidance.
 
 ## Create A Release
 
@@ -52,13 +52,22 @@ The first formal release is intentionally blocked until the maintainer's
 public SSH signing key is added to `keys/allowed_signers` through a reviewed
 change. Do not bypass the signature check or use a lightweight tag.
 
-For a local dry run before pushing a tag, run:
+## Remote Build Policy
+
+Release tests, dependency installation, compilation, packaging, checksums,
+and GitHub Release publication are performed only by
+`.github/workflows/release.yml` on GitHub-hosted runners. Local Maven and npm
+builds are not release inputs and are not required for publishing.
+
+The local machine is used only to create the signed annotated tag and may
+perform optional static or signature verification. Generated directories such
+as `backend/target`, `frontend/dist`, and `frontend/node_modules` are ignored
+and can be removed at any time.
+
+To re-run a trusted existing tag without rewriting or deleting it:
 
 ```bash
-scripts/validate_repo.sh
-scripts/validate_tag_signature.sh "$(git rev-parse vX.Y.Z)"
-cd backend && mvn clean package
-cd ../frontend && npm ci && npm run build
+gh workflow run release.yml --ref main --field release_tag=vX.Y.Z
 ```
 
 ## Verify A Release

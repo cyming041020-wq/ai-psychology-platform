@@ -61,14 +61,19 @@ Git to add a `Signed-off-by` trailer after configuring your Git identity.
 
 ## Validation
 
-Run the repository checks before opening a CR:
+GitHub Actions is the authoritative build environment. Every PR runs the
+`ugs-validate` and `application-checks` workflows on clean hosted runners;
+local Maven and npm builds are optional developer feedback and are not release
+inputs.
+
+Run the repository checks locally when the required shell tools are available:
 
 ```bash
 scripts/validate_repo.sh
 scripts/validate_commit_range.sh main..HEAD
 ```
 
-Run application checks for code changes:
+For local development only, application checks can be run with:
 
 ```bash
 cd backend && mvn clean test
