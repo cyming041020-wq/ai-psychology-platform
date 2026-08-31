@@ -36,11 +36,20 @@ function errorMessage(error: unknown, fallback: string) {
   return axios.isAxiosError(error) ? error.response?.data?.message || fallback : fallback
 }
 
+function responseStatus(error: unknown) {
+  return axios.isAxiosError(error) ? error.response?.status : undefined
+}
+
 async function selectSession(sessionId: number) {
   try {
     activeSession.value = await getConsultationSession(sessionId)
   } catch (error: unknown) {
-    ElMessage.error(errorMessage(error, '无法加载咨询会话'))
+    if (responseStatus(error) === 404) {
+      activeSession.value = null
+      ElMessage.warning('会话已失效，请新建一个会话')
+    } else if (responseStatus(error) !== 401) {
+      ElMessage.error(errorMessage(error, '无法加载咨询会话'))
+    }
   }
 }
 
@@ -52,7 +61,9 @@ async function loadSessions() {
       await selectSession(activeSession.value?.id || sessions.value[0].id)
     }
   } catch (error: unknown) {
-    ElMessage.error(errorMessage(error, '无法加载咨询会话'))
+    if (responseStatus(error) !== 401) {
+      ElMessage.error(errorMessage(error, '无法加载咨询会话'))
+    }
   } finally {
     loading.value = false
   }
@@ -64,7 +75,9 @@ async function startSession() {
     sessions.value = [session, ...sessions.value]
     activeSession.value = session
   } catch (error: unknown) {
-    ElMessage.error(errorMessage(error, '创建会话失败'))
+    if (responseStatus(error) !== 401) {
+      ElMessage.error(errorMessage(error, '创建会话失败'))
+    }
   }
 }
 
@@ -89,7 +102,13 @@ async function sendMessage() {
     sessions.value = sessions.value.map((item) => item.id === session.id ? session : item)
   } catch (error: unknown) {
     draft.value = content
-    ElMessage.error(errorMessage(error, '消息发送失败'))
+    if (responseStatus(error) === 404) {
+      activeSession.value = null
+      ElMessage.warning('当前会话已失效，请新建一个会话后重试')
+      await loadSessions()
+    } else if (responseStatus(error) !== 401) {
+      ElMessage.error(errorMessage(error, '消息发送失败'))
+    }
   } finally {
     sending.value = false
   }
