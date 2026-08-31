@@ -32,6 +32,35 @@ git push origin vX.Y.Z
 
 The managed pre-push hook rejects unsigned or untrusted `v*` tags.
 
+## Automatic GitHub Release
+
+After a trusted signed tag is pushed, `.github/workflows/release.yml` will:
+
+1. Verify the signed annotated tag and confirm that its commit is reachable
+   from `main`.
+2. Validate repository policy, run backend tests, and build the frontend.
+3. Attach the backend JAR, frontend `dist` archive, and `SHA256SUMS` to a
+   GitHub Release.
+4. Generate release notes with changes, compatibility, breaking-change, and
+   rollback sections.
+
+The workflow uses the repository-provided `GITHUB_TOKEN` only for creating the
+release. It does not publish a release when tag verification or any build
+step fails.
+
+The first formal release is intentionally blocked until the maintainer's
+public SSH signing key is added to `keys/allowed_signers` through a reviewed
+change. Do not bypass the signature check or use a lightweight tag.
+
+For a local dry run before pushing a tag, run:
+
+```bash
+scripts/validate_repo.sh
+scripts/validate_tag_signature.sh "$(git rev-parse vX.Y.Z)"
+cd backend && mvn clean package
+cd ../frontend && npm ci && npm run build
+```
+
 ## Verify A Release
 
 ```bash
