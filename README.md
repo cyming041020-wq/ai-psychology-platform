@@ -36,7 +36,7 @@ ai-psychology-platform/
 ## 快速启动
 
 1. 创建数据库并执行 `docs/sql/init.sql`。
-2. 按需设置后端环境变量 `DB_USERNAME`、`DB_PASSWORD`、`REDIS_HOST`。
+2. 按需设置后端环境变量 `DB_USERNAME`、`DB_PASSWORD`、`REDIS_HOST`、`JWT_SECRET`。
 3. 启动后端：
 
    ```bash
@@ -54,7 +54,7 @@ ai-psychology-platform/
 
 5. 打开 <http://localhost:3000>。后端探针地址为 <http://localhost:8080/api/test>。
 
-更完整的初始化与运行说明请参阅 [docs/initialization.md](docs/initialization.md)。
+认证接口已提供 `POST /api/auth/login` 和 `GET /api/auth/me`；完整初始化与运行说明请参阅 [docs/initialization.md](docs/initialization.md)。
 
 ## UGS 变更流程
 

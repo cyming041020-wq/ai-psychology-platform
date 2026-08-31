@@ -93,6 +93,7 @@ Get-Content .\docs\sql\init.sql | mysql -u root -p psychology
 $env:DB_USERNAME = "root"
 $env:DB_PASSWORD = "your_password"
 $env:REDIS_HOST = "localhost"
+$env:JWT_SECRET = "replace-with-a-random-secret-at-least-32-bytes"
 ```
 
 Linux/macOS 示例：
@@ -101,6 +102,7 @@ Linux/macOS 示例：
 export DB_USERNAME=root
 export DB_PASSWORD=your_password
 export REDIS_HOST=localhost
+export JWT_SECRET=replace-with-a-random-secret-at-least-32-bytes
 ```
 
 启动后端：
@@ -118,7 +120,22 @@ GET http://localhost:8080/api/test
 
 预期返回包含 `"status":"ok"` 和 `"service":"psychology-backend"` 的 JSON。
 
-## 5. 配置前端
+## 5. 认证接口
+
+认证基础已提供以下接口：
+
+- `POST /api/auth/login`：使用账号和至少 8 位密码换取 Bearer access token。
+- `GET /api/auth/me`：携带 `Authorization: Bearer <token>` 获取当前登录身份。
+- `GET /api/test`：公开健康检查接口。
+
+用户密码只保存为 BCrypt 哈希，登录响应不会返回密码或哈希。角色目前支持
+`USER`、`COUNSELOR` 和 `ADMIN`；`/api/admin/**` 仅允许 `ADMIN` 访问。系统不包含
+默认账号，须由后续用户管理流程创建账号。
+
+生产环境必须使用随机生成且长度至少 32 字节的 `JWT_SECRET`，不能使用配置文件中的
+开发默认值。JWT 当前有效期默认 24 小时。
+
+## 6. 配置前端
 
 在新终端执行：
 
@@ -136,7 +153,7 @@ npm run dev
 - `/login`：登录页占位
 - `/`：重定向到 `/home`
 
-## 6. 验证与构建
+## 7. 验证与构建
 
 后端测试与打包：
 
@@ -155,7 +172,7 @@ npm run build
 
 若当前机器仍是 Java 8 或 Node.js 16，构建会因版本不满足要求而失败。请先切换到 JDK 17+ 和 Node.js 18+，再执行上述命令。
 
-## 7. Git 初始化与 UGS 变更流程
+## 8. Git 初始化与 UGS 变更流程
 
 在仓库根目录执行：
 
@@ -241,7 +258,7 @@ UGS_ALLOW_MAIN_PUSH=cr git push origin HEAD:main
 
 不要将数据库密码、API Key 或本地环境文件提交到仓库。生产环境应使用部署平台的密钥管理功能注入配置。
 
-## 8. 常用命令
+## 9. 常用命令
 
 | 操作 | 命令 |
 | --- | --- |

@@ -1,18 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ChatDotRound, CircleCheck, FirstAidKit, User } from '@element-plus/icons-vue'
 
+import api from '../services/api'
+import { useAuthStore } from '../stores/auth'
+
 const router = useRouter()
+const auth = useAuthStore()
 const connected = ref(false)
+const displayName = computed(() => auth.user?.displayName || auth.user?.username || '')
 
 async function checkBackend() {
   try {
-    const response = await fetch('/api/test')
-    connected.value = response.ok
+    await api.get('/test')
+    connected.value = true
   } catch {
     connected.value = false
   }
+}
+
+function logout() {
+  auth.logout()
+  router.push('/home')
 }
 </script>
 
@@ -23,7 +33,11 @@ async function checkBackend() {
         <span class="brand-mark"><FirstAidKit /></span>
         <span>心理支持平台</span>
       </div>
-      <el-button :icon="User" plain @click="router.push('/login')">登录</el-button>
+      <div v-if="auth.isAuthenticated" class="header-actions">
+        <span class="user-greeting"><User /> {{ displayName }}</span>
+        <el-button plain @click="logout">退出</el-button>
+      </div>
+      <el-button v-else :icon="User" plain @click="router.push('/login')">登录</el-button>
     </header>
 
     <section class="hero">

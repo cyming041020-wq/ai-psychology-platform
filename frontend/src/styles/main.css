@@ -38,7 +38,9 @@ input {
 }
 
 .brand,
-.status-action {
+.status-action,
+.header-actions,
+.user-greeting {
   align-items: center;
   display: flex;
   gap: 10px;
@@ -48,6 +50,15 @@ input {
   color: #176b67;
   font-size: 17px;
   font-weight: 700;
+}
+
+.header-actions {
+  gap: 16px;
+}
+
+.user-greeting {
+  color: #53696d;
+  font-size: 14px;
 }
 
 .brand-mark {
