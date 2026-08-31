@@ -1,0 +1,2 @@
+# Add a project maintainer entry before the first formal release:
+# maintainer@example.com namespaces="git" ssh-ed25519 AAAA... comment

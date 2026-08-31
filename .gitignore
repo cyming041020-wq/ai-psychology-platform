@@ -1,0 +1,30 @@
+# Java / Maven
+*.class
+*.jar
+*.war
+target/
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+application-local.yml
+
+# Logs
+logs/
+*.log

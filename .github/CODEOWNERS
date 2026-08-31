@@ -1,0 +1,15 @@
+# Replace @project-maintainer with the project's GitHub maintainer team.
+* @project-maintainer
+
+/docs/git/ @project-maintainer
+/.githooks/ @project-maintainer
+/.github/workflows/ @project-maintainer
+/keys/ @project-maintainer
+/scripts/validate_commit_message.sh @project-maintainer
+/scripts/validate_commit_range.sh @project-maintainer
+/scripts/validate_cr_record.sh @project-maintainer
+/scripts/validate_repo.sh @project-maintainer
+/scripts/validate_tag_signature.sh @project-maintainer
+/REPOSITORY_POLICY.md @project-maintainer
+/CONTRIBUTING.md @project-maintainer
+/RELEASE.md @project-maintainer
