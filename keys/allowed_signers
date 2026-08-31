@@ -1,2 +1,2 @@
-# Add a project maintainer entry before the first formal release:
-# maintainer@example.com namespaces="git" ssh-ed25519 AAAA... comment
+# Trusted project maintainer for formal release tag verification.
+242773733+cyming041020-wq@users.noreply.github.com namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIVocgBQ9bxo6Vp8xVhu+WUOBgIB2ZdnYYcRLS6LmFD9 release-signing-key
