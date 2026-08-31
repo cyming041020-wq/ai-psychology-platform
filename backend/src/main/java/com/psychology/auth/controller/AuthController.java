@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.psychology.auth.model.CurrentUserResponse;
 import com.psychology.auth.model.LoginRequest;
 import com.psychology.auth.model.LoginResponse;
+import com.psychology.auth.model.RegisterRequest;
 import com.psychology.auth.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -28,6 +29,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
     }
 
     @GetMapping("/me")

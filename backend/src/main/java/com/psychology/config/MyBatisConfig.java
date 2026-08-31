@@ -6,6 +6,6 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 @Profile("!test")
-@MapperScan("com.psychology.auth.mapper")
+@MapperScan("com.psychology")
 public class MyBatisConfig {
 }
