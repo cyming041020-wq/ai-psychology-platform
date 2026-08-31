@@ -45,7 +45,12 @@ function logout() {
       <h1>让每一次倾听，都有温度与回应</h1>
       <p class="hero-copy">从情绪记录到专业咨询，为你提供可靠、私密的心理支持入口。</p>
       <div class="hero-actions">
-        <el-button type="primary" size="large" :icon="ChatDotRound">开始倾诉</el-button>
+        <el-button
+          type="primary"
+          size="large"
+          :icon="ChatDotRound"
+          @click="router.push(auth.isAuthenticated ? '/consultation' : '/login')"
+        >开始倾诉</el-button>
         <el-button size="large" :icon="FirstAidKit">危机援助</el-button>
       </div>
     </section>

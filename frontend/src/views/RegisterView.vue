@@ -11,7 +11,7 @@ const router = useRouter()
 const auth = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
-const form = reactive({ username: '', password: '' })
+const form = reactive({ username: '', password: '', displayName: '' })
 
 const rules: FormRules = {
   username: [
@@ -20,15 +20,15 @@ const rules: FormRules = {
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 8, message: '密码至少需要 8 个字符', trigger: 'blur' },
+    { min: 8, max: 128, message: '密码长度需为 8-128 个字符', trigger: 'blur' },
   ],
+  displayName: [{ max: 64, message: '昵称不能超过 64 个字符', trigger: 'blur' }],
 }
 
-async function handleLogin() {
+async function handleRegister() {
   if (!formRef.value || loading.value) {
     return
   }
-
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) {
     return
@@ -36,14 +36,12 @@ async function handleLogin() {
 
   loading.value = true
   try {
-    await auth.login(form)
-    ElMessage.success('登录成功')
-    await router.push('/home')
+    await auth.register(form)
+    ElMessage.success('注册成功，已自动登录')
+    await router.push('/consultation')
   } catch (error: unknown) {
-    const message = axios.isAxiosError(error)
-      ? error.response?.data?.message
-      : undefined
-    ElMessage.error(message || '登录失败，请稍后重试')
+    const message = axios.isAxiosError(error) ? error.response?.data?.message : undefined
+    ElMessage.error(message || '注册失败，请稍后重试')
   } finally {
     loading.value = false
   }
@@ -56,9 +54,9 @@ async function handleLogin() {
       <el-button text :icon="ArrowLeft" @click="router.push('/home')">返回首页</el-button>
       <div class="auth-heading">
         <span class="brand-mark"><User /></span>
-        <p class="eyebrow">安全登录</p>
-        <h1>欢迎回来</h1>
-        <p>登录后继续使用心理支持服务。</p>
+        <p class="eyebrow">创建账号</p>
+        <h1>开始你的支持之旅</h1>
+        <p>注册后即可创建属于自己的 AI 咨询会话。</p>
       </div>
       <el-form
         ref="formRef"
@@ -66,8 +64,11 @@ async function handleLogin() {
         :rules="rules"
         label-position="top"
         class="auth-form"
-        @submit.prevent="handleLogin"
+        @submit.prevent="handleRegister"
       >
+        <el-form-item label="昵称（可选）" prop="displayName">
+          <el-input v-model="form.displayName" :prefix-icon="User" autocomplete="nickname" placeholder="怎么称呼你" />
+        </el-form-item>
         <el-form-item label="账号" prop="username">
           <el-input v-model="form.username" :prefix-icon="User" autocomplete="username" placeholder="请输入账号" />
         </el-form-item>
@@ -76,17 +77,17 @@ async function handleLogin() {
             v-model="form.password"
             :prefix-icon="Lock"
             type="password"
-            autocomplete="current-password"
+            autocomplete="new-password"
             show-password
-            placeholder="请输入密码"
-            @keyup.enter="handleLogin"
+            placeholder="至少 8 个字符"
+            @keyup.enter="handleRegister"
           />
         </el-form-item>
-        <el-button type="primary" size="large" class="full-width" :loading="loading" @click="handleLogin">
-          登录
+        <el-button type="primary" size="large" class="full-width" :loading="loading" @click="handleRegister">
+          注册并开始
         </el-button>
-        <el-button text class="full-width auth-secondary-action" @click="router.push('/register')">
-          注册新账号
+        <el-button text class="full-width auth-secondary-action" @click="router.push('/login')">
+          已有账号，去登录
         </el-button>
       </el-form>
     </el-card>

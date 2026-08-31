@@ -2,7 +2,7 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import api, { ACCESS_TOKEN_KEY } from '../services/api'
-import type { LoginRequest, LoginResponse, UserProfile } from '../types/auth'
+import type { LoginRequest, LoginResponse, RegisterRequest, UserProfile } from '../types/auth'
 
 const USER_KEY = 'psychology_user'
 
@@ -25,12 +25,21 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<UserProfile | null>(readStoredUser())
   const isAuthenticated = computed(() => Boolean(token.value))
 
-  async function login(credentials: LoginRequest) {
-    const { data } = await api.post<LoginResponse>('/auth/login', credentials)
+  function applyLoginResponse(data: LoginResponse) {
     token.value = data.accessToken
     user.value = data.user
     localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken)
     localStorage.setItem(USER_KEY, JSON.stringify(data.user))
+  }
+
+  async function login(credentials: LoginRequest) {
+    const { data } = await api.post<LoginResponse>('/auth/login', credentials)
+    applyLoginResponse(data)
+  }
+
+  async function register(credentials: RegisterRequest) {
+    const { data } = await api.post<LoginResponse>('/auth/register', credentials)
+    applyLoginResponse(data)
   }
 
   function logout() {
@@ -40,5 +49,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(USER_KEY)
   }
 
-  return { token, user, isAuthenticated, login, logout }
+  return { token, user, isAuthenticated, login, register, logout }
 })
