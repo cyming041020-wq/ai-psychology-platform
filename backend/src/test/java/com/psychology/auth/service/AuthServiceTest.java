@@ -10,9 +10,11 @@ import static org.mockito.Mockito.when;
 
 import com.psychology.auth.entity.SysUser;
 import com.psychology.auth.exception.InvalidCredentialsException;
+import com.psychology.auth.exception.UsernameAlreadyExistsException;
 import com.psychology.auth.mapper.SysUserMapper;
 import com.psychology.auth.model.LoginRequest;
 import com.psychology.auth.model.LoginResponse;
+import com.psychology.auth.model.RegisterRequest;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,6 +66,38 @@ class AuthServiceTest {
         assertThat(response.expiresIn()).isEqualTo(86400L);
         assertThat(response.user().id()).isEqualTo(7L);
         assertThat(response.user().role()).isEqualTo("USER");
+    }
+
+    @Test
+    void registersUserAndReturnsBearerToken() {
+        when(sysUserMapper.selectOne(any())).thenReturn(null);
+        when(passwordEncoder.encode("correct-password")).thenReturn("new-bcrypt-hash");
+        when(sysUserMapper.insert(any())).thenAnswer(invocation -> {
+            SysUser user = invocation.getArgument(0);
+            user.setId(9L);
+            return 1;
+        });
+        when(jwtService.issueToken(any())).thenReturn("jwt-token");
+        when(jwtService.expirationSeconds()).thenReturn(86400L);
+
+        LoginResponse response = authService.register(new RegisterRequest(
+                " user@example.com ", "correct-password", "New User"));
+
+        assertThat(response.user().id()).isEqualTo(9L);
+        assertThat(response.user().username()).isEqualTo("user@example.com");
+        assertThat(response.user().displayName()).isEqualTo("New User");
+        verify(passwordEncoder).encode("correct-password");
+    }
+
+    @Test
+    void rejectsRegistrationWhenUsernameAlreadyExists() {
+        when(sysUserMapper.selectOne(any())).thenReturn(user(1L, "user@example.com", "USER", 1));
+
+        assertThatThrownBy(() -> authService.register(new RegisterRequest(
+                "user@example.com", "correct-password", "User")))
+                .isInstanceOf(UsernameAlreadyExistsException.class)
+                .hasMessage("username already exists");
+        verify(sysUserMapper, never()).insert(any());
     }
 
     private SysUser user(Long id, String username, String role, Integer status) {

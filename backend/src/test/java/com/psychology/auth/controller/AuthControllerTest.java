@@ -58,4 +58,20 @@ class AuthControllerTest {
                         .content("{\"username\":\"user@example.com\",\"password\":\"short\"}"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void registersNewUserAndReturnsTokenResponse() throws Exception {
+        when(authService.register(any())).thenReturn(new LoginResponse(
+                "jwt-token",
+                "Bearer",
+                86400L,
+                new UserProfile(2L, "new@example.com", "New User", "USER")));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"username\":\"new@example.com\",\"password\":\"correct-password\",\"displayName\":\"New User\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("jwt-token"))
+                .andExpect(jsonPath("$.user.username").value("new@example.com"));
+    }
 }

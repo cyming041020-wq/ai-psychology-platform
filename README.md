@@ -81,6 +81,7 @@ Tested-by: Maintainer <maintainer@example.com>
 
 ## 项目治理文档
 
+- [docs/consultation-loop.md](docs/consultation-loop.md)：注册、咨询会话与 Mock AI 回复的运行闭环
 - [REPOSITORY_POLICY.md](REPOSITORY_POLICY.md)：本仓库 UGS 声明
 - [CONTRIBUTING.md](CONTRIBUTING.md)：分支、提交、CR 与审查流程
 - [RELEASE.md](RELEASE.md)：SemVer 与正式发布签名流程
