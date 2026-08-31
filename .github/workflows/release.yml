@@ -22,6 +22,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Restore annotated tag ref
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git fetch --force --no-tags origin \
+            "refs/tags/${RELEASE_TAG}:refs/tags/${RELEASE_TAG}"
+
       - name: Validate release tag
         env:
           RELEASE_TAG: ${{ github.ref_name }}
